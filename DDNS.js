@@ -12,9 +12,8 @@ let items = [],
     zones = [],
     dns_list = [],
     dns_id = [];
-if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
+if (fs.existsSync("./data.json")) {
     const data = require("./data.json");
-    const Token = require("./key.json");
     let ip = "",
         old_ip = "";
     startdns();
@@ -26,22 +25,22 @@ if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
         re(mygetip.random(), (e, r, d) => {
             ip = d.replaceAll(/\s/g, '');
             if (ip !== old_ip) {
+                console.log("DDNS Update [" + old_ip + "] => [" + ip + "]")
                 old_ip = ip;
                 re({
-                    url: 'https://api.cloudflare.com/client/v4/zones/' + data.zone_id + '/dns_records/' + data.id,
+                    url: 'https://api.cloudflare.com/client/v4/zones/' + data.Memory.zone_id + '/dns_records/' + data.Memory.id,
                     method: "PUT",
                     body: JSON.stringify({
                         "content": ip
                     }),
                     headers: {
-                        'X-Auth-Email': Token.EMAIL,
-                        'X-Auth-Key': Token.KEY,
+                        'X-Auth-Email': data.EMAIL,
+                        'X-Auth-Key': data.KEY,
                         'content-type': 'application/json',
                     }
                 })
-                console.log("DDNS Update [" + old_ip + "] => [" + ip + "]")
             } else {
-                console.log("Dns No Update")
+                console.log("DNS No Update")
             }
 
         })
@@ -49,17 +48,17 @@ if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
 
 } else {
     console.log(`
-    +-----------------------------------------------------------+
-    |               ∙◆◦[ TinnerX DDNS Update ]◦◆∙               |
-    +-----------------------------------------------------------+
-    | เครื่องมือการทำ DDNS แบบอัตโนมือ หรือ สักอย่าง ที่เชื่อมกับ cloudflare |
-    +-----------------------------------------------------------+
-    |          เนื่อจากยังไม่มีการตั้งค้าจะทำการสร้างใหม่เลยละกัน          |
-    +-----------------------------------------------------------+
+    +--------------------------------------------------------------+
+    |                 ∙◆◦[ TinnerX DDNS Update ]◦◆∙                |
+    +--------------------------------------------------------------+
+    | An automated DDNS tool or something connected to cloudflare. |
+    +--------------------------------------------------------------+
+    |    Since there is no setting up, we will create a new one.   |
+    +--------------------------------------------------------------+
     `)
     let email = readline.question("Email Cloudflare : ");
-    console.log("Tip สามารถหา Key ได้ที่ https://dash.cloudflare.com/profile/api-tokens")
-    let Key = readline.question("Origin CA Key : ", {
+    console.log("Tip You can find the key at https://dash.cloudflare.com/profile/api-tokens")
+    let Key = readline.question("Global API Key : ", {
         hideEchoBack: false
     });
     re({
@@ -70,7 +69,7 @@ if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
         }
     }, (e, r) => {
         if (r.statusCode == 200) {
-            console.log("ยืนยันระบบ User ว่าผ่านเรียบร้อย")
+            console.log("Verify that the user system has passed successfully.")
             re({
                 url: 'https://api.cloudflare.com/client/v4/zones',
                 headers: {
@@ -87,7 +86,7 @@ if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
                 }
                 countdomain = readline.keyInSelect(items, 'select domain : ');
                 if (countdomain === -1) {
-                    console.log("End")
+                    console.log("The domain is not selected? Choose other than")
                     process.exit()
                 } else {
                     re({
@@ -104,31 +103,24 @@ if (fs.existsSync("./data.json") && fs.existsSync("./key.json")) {
                                 dns_id[i] = dns_all[i]["id"]
                             }
                         }
-                        countdns = readline.keyInSelect(dns_list, 'select dns : ');
+                        countdns = readline.keyInSelect(dns_list, 'select DNS or Record : ');
                         if (countdns === -1) {
-                            console.log("end")
+                            console.log("The Record is not selected? Choose other than")
                             process.exit()
                         } else {
-                            let savedata = JSON.stringify(dns_all[countdns]);
+
+                            let savedata = JSON.stringify({Memory: dns_all[countdns],EMAIL: email,KEY: Key});
                             fs.writeFileSync('data.json', savedata, function (err) {
                                 if (err) throw err;
                             });
-                            let savekey = JSON.stringify({
-                                EMAIL: email,
-                                KEY: Key
-                            });
-                            fs.writeFileSync('key.json', savekey, function (err) {
-                                if (err) throw err;
-                            });
                             console.log('Create data.json');
-                            console.log('Create key.json');
-                            console.log('บันทึกเรียบร้อย เข้ามาใหม่')
+                            console.log('Saved successfully open a new program')
                         }
                     })
                 }
             })
         } else {
-            console.log("ยืนยันไม่ผ่าน Key ผิด หรือ Email ผิด โปรดลองอีกครั้ง")
+            console.log("Failed to confirm via wrong key or wrong email, please try again.")
             process.exit()
         }
     })
