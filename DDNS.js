@@ -1,36 +1,28 @@
-require('events').EventEmitter.defaultMaxListeners = 0;
 process.on('uncaughtException', function (err) {});
 process.on('unhandledRejection', function (err) {});
-const mygetip = ["http://checkip.amazonaws.com", "https://api.ipify.org", "http://icanhazip.com", "https://ifconfig.me/ip", "https://ip.seeip.org", "https://ipapi.co/ip/", "https://ipv4bot.whatismyipaddress.com/", "https://v4.ident.me/", "https://myexternalip.com/raw"]
-Array.prototype.random = function () {
-    return this[Math.floor((Math.random() * this.length))]
-}
+
+let mygetip = ["http://checkip.amazonaws.com", "https://api.ipify.org", "http://icanhazip.com", "https://ifconfig.me/ip", "https://ip.seeip.org", "https://ipapi.co/ip/", "https://ipv4bot.whatismyipaddress.com/", "https://v4.ident.me/", "https://myexternalip.com/raw"]
+let v4 = "https://api.cloudflare.com/client/v4/";
 const fs = require("fs");
 const re = require('request');
 const readline = require('readline-sync');
-let items = [],
-    zones = [],
-    dns_list = [],
-    dns_id = [];
+let items = [],zones = [],dns_list = [],dns_id = [];
 if (fs.existsSync("./data.json")) {
     const data = require("./data.json");
-    let ip = "",
-        old_ip = "";
+    let ip = "",old_ip = "";
     startdns();
-    setInterval(() => {
-        startdns()
-    }, 1000 * 60);
-
+    setInterval(startdns,60000);
     function startdns() {
-        re(mygetip.random(), (e, r, d) => {
+        re(mygetip[Math.floor((Math.random() * mygetip.length))], (e, r, d) => {
             ip = d.replaceAll(/\s/g, '');
-            if (ip !== old_ip) {
+            if (ip != old_ip) {
                 console.log("DDNS Update [" + old_ip + "] => [" + ip + "]")
-                old_ip = ip;
                 re({
-                    url: 'https://api.cloudflare.com/client/v4/zones/' + data.Memory.zone_id + '/dns_records/' + data.Memory.id,
+                    url: v4 + 'zones/' + data.Memory.zone_id + '/dns_records/' + data.Memory.id,
                     method: "PUT",
                     body: JSON.stringify({
+                        "type": data.Memory.type,
+                        "name": data.Memory.name,
                         "content": ip
                     }),
                     headers: {
@@ -39,6 +31,7 @@ if (fs.existsSync("./data.json")) {
                         'content-type': 'application/json',
                     }
                 })
+                old_ip = ip;
             } else {
                 console.log("DNS No Update")
             }
@@ -47,22 +40,14 @@ if (fs.existsSync("./data.json")) {
     }
 
 } else {
-    console.log(`
-    +--------------------------------------------------------------+
-    |                 ∙◆◦[ TinnerX DDNS Update ]◦◆∙                |
-    +--------------------------------------------------------------+
-    | An automated DDNS tool or something connected to cloudflare. |
-    +--------------------------------------------------------------+
-    |    Since there is no setting up, we will create a new one.   |
-    +--------------------------------------------------------------+
-    `)
+    console.log('\n+--------------------------------------------------------------+\n|                 ∙◆◦[ TinnerX DDNS Update ]◦◆∙                |\n+--------------------------------------------------------------+\n| An automated DDNS tool or something connected to cloudflare. |\n+--------------------------------------------------------------+\n|    Since there is no setting up, we will create a new one.   |\n+--------------------------------------------------------------+\n')
     let email = readline.question("Email Cloudflare : ");
     console.log("Tip You can find the key at https://dash.cloudflare.com/profile/api-tokens")
     let Key = readline.question("Global API Key : ", {
         hideEchoBack: false
     });
     re({
-        url: 'https://api.cloudflare.com/client/v4/user',
+        url: v4 + 'user',
         headers: {
             'X-Auth-Email': email,
             'X-Auth-Key': Key,
@@ -71,7 +56,7 @@ if (fs.existsSync("./data.json")) {
         if (r.statusCode == 200) {
             console.log("Verify that the user system has passed successfully.")
             re({
-                url: 'https://api.cloudflare.com/client/v4/zones',
+                url: v4 + 'zones',
                 headers: {
                     'X-Auth-Email': email,
                     'X-Auth-Key': Key,
@@ -90,7 +75,7 @@ if (fs.existsSync("./data.json")) {
                     process.exit()
                 } else {
                     re({
-                        url: 'https://api.cloudflare.com/client/v4/zones/' + zones[countdomain] + '/dns_records',
+                        url: v4 + 'zones/' + zones[countdomain] + '/dns_records',
                         headers: {
                             'X-Auth-Email': email,
                             'X-Auth-Key': Key,
