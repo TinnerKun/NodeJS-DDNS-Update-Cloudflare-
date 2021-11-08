@@ -3,14 +3,26 @@
     "readline-sync": "^1.4.10",
     "request": "^2.88.2"
   },
-  "name": "ddnsupdate",
+  "name": "nodejs-ddnsupdate-cloudflare",
   "version": "1.0.0",
+  "description": "CreateBy TinnerX",
   "main": "DDNS.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ."
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TinnerKun/NodeJS-DDNS-Update-Cloudflare-.git"
+  },
+  "keywords": [
+    "DDNS",
+    "Cloudflare-Update",
+    "ipv4"
+  ],
+  "author": "TinnerX",
   "license": "ISC",
-  "description": ""
+  "bugs": {
+    "url": "https://github.com/TinnerKun/NodeJS-DDNS-Update-Cloudflare-/issues"
+  },
+  "homepage": "https://github.com/TinnerKun/NodeJS-DDNS-Update-Cloudflare-#readme"
 }
