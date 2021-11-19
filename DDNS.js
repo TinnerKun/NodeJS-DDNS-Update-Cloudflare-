@@ -1,6 +1,3 @@
-process.on('uncaughtException', function (err) {});
-process.on('unhandledRejection', function (err) {});
-
 let mygetip = ["http://checkip.amazonaws.com", "https://api.ipify.org", "http://icanhazip.com", "https://ifconfig.me/ip", "https://ip.seeip.org", "https://ipapi.co/ip/", "https://ipv4bot.whatismyipaddress.com/", "https://v4.ident.me/", "https://myexternalip.com/raw"]
 let v4 = "https://api.cloudflare.com/client/v4/";
 const fs = require("fs");
@@ -13,8 +10,11 @@ if (fs.existsSync("./data.json")) {
     startdns();
     setInterval(startdns,60000);
     function startdns() {
-        re(mygetip[Math.floor((Math.random() * mygetip.length))], (e, r, d) => {
-            ip = d.replaceAll(/\s/g, '');
+		try {
+		re(mygetip[Math.floor((Math.random() * mygetip.length))] , (e, r, d) => {
+            if(d === undefined) return console.log("Error : undefined")
+			ip = d.replaceAll(/[a-z,\s]/g, '')
+			if (ip === '') return console.log("Error Replace")
             if (ip != old_ip) {
                 console.log("DDNS Update [" + old_ip + "] => [" + ip + "]")
                 re({
@@ -37,6 +37,10 @@ if (fs.existsSync("./data.json")) {
             }
 
         })
+		} catch (error) {
+			console.log("Error Catch")
+		} 
+        
     }
 
 } else {
