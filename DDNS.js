@@ -12,9 +12,10 @@ if (fs.existsSync("./data.json")) {
     function startdns() {
 		try {
 		re(mygetip[Math.floor((Math.random() * mygetip.length))] , (e, r, d) => {
-            if(d === undefined) return console.log("Error : undefined")
+            if(d === undefined) return console.log("Error : undefined -> Restart Function"), startdns()
 			ip = d.replaceAll(/[a-z,\s]/g, '')
-			if (ip === '') return console.log("Error Replace")
+			if (ip === '') return console.log("Error : Replace -> Restart Function"), startdns()
+            if (ip.length > 15) return console.log("Error : IP Limit Lenght -> Restart Function"), startdns() 
             if (ip != old_ip) {
                 console.log("DDNS Update [" + old_ip + "] => [" + ip + "]")
                 re({
